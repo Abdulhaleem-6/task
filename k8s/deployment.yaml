@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: task
-          image: abdulhaleem/task
+          image: abdulhaleemsan/task-app:latest
           ports:
             - containerPort: 3000
           resources:
