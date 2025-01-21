@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - PORT=3000
+      - NODE_ENV=development
+    volumes:
+      - ./src:/usr/src/app/src
+    env_file:
+      - .env
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+
+  mysql_db:
+    image: mysql:8
+    ports:
+      - '3307:3306'
+    restart: always
+    container_name: mysql-db
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=abdulhaleem
+      - MYSQL_DATABASE=task
+      - MYSQL_ROOT_USER=root
+      - MYSQL_TCP_PORT=3306
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'root',
+          '-p$$MYSQL_ROOT_PASSWORD',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

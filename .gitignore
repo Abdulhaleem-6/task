@@ -1,0 +1,73 @@
+# Node & TypeScript
+/dist
+/build
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDEs and Editors
+.idea/
+.vscode/*
+.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# TypeScript Config
+tsconfig*.json
+
+# Prettier & ESLint
+
+
+# Prisma
+prisma/migrations/migration_lock.toml
+
+# Jest & Testing
+jest-e2e.json
+/coverage
+/.nyc_output
+
+# Operating System
+.DS_Store
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Temporary Files
+.temp
+.tmp
+
+# Runtime Data
+pids
+*.pid
+*.pid.lock
+*.seed
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Optional: GitHub Action workflows (if not using them)
+.github/workflows/
+
+# Optional: IntelliJ and JetBrains IDEs
+.idea/
+*.iml
+
+# Optional: MacOS .AppleDouble files
+.AppleDouble
+.LSOverride
