@@ -37,7 +37,7 @@ services:
           'mysqladmin',
           'ping',
           '-h',
-          'localhost',
+          'mysql-db',  # Change from localhost to the service name
           '-u',
           'root',
           '-p$$MYSQL_ROOT_PASSWORD',
