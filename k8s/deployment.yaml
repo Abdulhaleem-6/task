@@ -21,11 +21,11 @@ spec:
             - containerPort: 3000
           resources:
             requests:
-              memory: '64Mi'
-              cpu: '250m'
+              memory: '128Mi' # Guaranteed 128 MB memory
+              cpu: '500m' # Guaranteed 50% of a single CPU
             limits:
-              memory: '128Mi'
-              cpu: '500m'
+              memory: '256Mi' # Maximum 256 MB memory
+              cpu: '1000m' # Maximum 1 CPU core
           env:
             - name: DB_HOST
               value: 'mysql-db'
