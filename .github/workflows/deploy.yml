@@ -21,8 +21,17 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Print environment variables
+        run: printenv
+
+      - name: Print versions
+        run: |
+          node -v
+          yarn -v
+          npx prisma -v
+
       - name: Run tests
-        run: yarn test
+        run: yarn test:unit
 
       - name: Build the application
         run: yarn build
