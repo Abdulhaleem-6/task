@@ -61,8 +61,6 @@ pids
 # Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Optional: GitHub Action workflows (if not using them)
-.github/workflows/
 
 # Optional: IntelliJ and JetBrains IDEs
 .idea/

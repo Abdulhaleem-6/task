@@ -1,0 +1,64 @@
+name: Task CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Run Tests
+        run: yarn test
+        
+  build-push:
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t abdulhaleemsan/task-app:latest .
+
+      - name: Push Docker Image
+        run: docker push abdulhaleemsan/task-app:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+    steps:
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@v0.5.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # Navigate to project directory
+            cd /home/ec2-user/task || git clone https://github.com/Abdulhaleem-6/task.git
+            cd task
+
+            # Export kubeconfig for k3s
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+            # Navigate to the k8s folder and apply Kubernetes manifests
+            cd k8s
+            kubectl apply -f mysql-service.yaml
+            kubectl apply -f deployment.yaml
