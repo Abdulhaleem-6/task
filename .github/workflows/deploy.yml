@@ -21,14 +21,20 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Print environment variables
-        run: printenv
-
-      - name: Print versions
+      - name: Set environment variables
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
+          NODE_ENV: test
         run: |
-          node -v
-          yarn -v
-          npx prisma -v
+          echo "DATABASE_URL=${DATABASE_URL}" >> $GITHUB_ENV
+          echo "JWT_SECRET=${JWT_SECRET}" >> $GITHUB_ENV
+          echo "JWT_EXPIRATION=${JWT_EXPIRATION}" >> $GITHUB_ENV
+          echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
+
+      - name: Run Prisma migrations
+        run: yarn prisma migrate dev --name init --skip-generate
 
       - name: Run tests
         run: yarn test:unit
