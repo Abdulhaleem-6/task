@@ -15,12 +15,17 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: task
         ports:
-          - 3307:3306
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Debug MySQL connection
+        run: |
+            echo "Testing MySQL connection..."
+            mysql -h localhost -P 3306 -u root -proot -e "SHOW DATABASES;"
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -30,6 +35,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Wait for MySQL to be ready
+        run: sleep 20 # Wait for the MySQL container to initialize
 
       - name: Set environment variables
         env:
