@@ -24,8 +24,15 @@ jobs:
 
       - name: Debug MySQL connection
         run: |
-            echo "Testing MySQL connection..."
-            mysql -h localhost -P 3306 -u root -proot -e "SHOW DATABASES;"
+          echo "Testing MySQL connection..."
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SELECT 1;" > /dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -36,12 +43,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Wait for MySQL to be ready
-        run: sleep 20 # Wait for the MySQL container to initialize
-
       - name: Set environment variables
         env:
-          DATABASE_URL: mysql://root:root@localhost:3306/task
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/task
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
           NODE_ENV: test
