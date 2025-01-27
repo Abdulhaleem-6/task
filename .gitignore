@@ -26,17 +26,10 @@ lerna-debug.log*
 .settings/
 *.sublime-workspace
 
-# TypeScript Config
-tsconfig*.json
-
-# Prettier & ESLint
-
-
 # Prisma
 prisma/migrations/migration_lock.toml
 
 # Jest & Testing
-jest-e2e.json
 /coverage
 /.nyc_output
 

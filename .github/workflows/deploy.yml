@@ -55,14 +55,22 @@ jobs:
           echo "JWT_EXPIRATION=${JWT_EXPIRATION}" >> $GITHUB_ENV
           echo "NODE_ENV=${NODE_ENV}" >> $GITHUB_ENV
 
-      - name: Run Prisma migrations
-        run: yarn prisma migrate dev --name init --skip-generate
+      - name: Generate Prisma Client
+        run: yarn prisma generate
+
+      # Add this before running tests
+      - name: Setup test environment
+        run: |
+          cp .env.example .env.test
+          yarn prisma generate
 
       - name: Run tests
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/task
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
+          NODE_ENV: test
         run: yarn test
-
-      - name: Build the application
-        run: yarn build
 
   build-push:
     runs-on: ubuntu-latest
