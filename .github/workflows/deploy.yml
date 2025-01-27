@@ -61,8 +61,11 @@ jobs:
       # Add this before running tests
       - name: Setup test environment
         run: |
-          cp .env.example .env.test
-          yarn prisma generate
+          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/task" >> .env.test
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.test
+          echo "JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}" >> .env.test
+          echo "NODE_ENV=test" >> .env.test
+          echo "PORT=3000" >> .env.test
 
       - name: Run tests
         env:
