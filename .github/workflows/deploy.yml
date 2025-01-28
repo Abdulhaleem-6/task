@@ -16,7 +16,7 @@ jobs:
           MYSQL_DATABASE: task
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout Code
@@ -58,21 +58,10 @@ jobs:
       - name: Generate Prisma Client
         run: yarn prisma generate
 
-      # Add this before running tests
-      - name: Setup test environment
-        run: |
-          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/task" >> .env.test
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.test
-          echo "JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}" >> .env.test
-          echo "NODE_ENV=test" >> .env.test
-          echo "PORT=3000" >> .env.test
+      - name: Run migrations
+        run: yarn prisma migrate deploy
 
       - name: Run tests
-        env:
-          DATABASE_URL: mysql://root:root@127.0.0.1:3306/task
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
-          NODE_ENV: test
         run: yarn test
 
   build-push:
@@ -84,14 +73,6 @@ jobs:
 
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Deploy App
-        run: |
-          docker run \
-            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            -e JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }} \
-            abdulhaleemsan/task-app:latest
 
       - name: Build Docker Image
         run: |
@@ -119,10 +100,11 @@ jobs:
             cd /home/ec2-user/task || git clone https://github.com/Abdulhaleem-6/task.git
             cd task
 
+            # Pull the latest Docker image
+            docker pull abdulhaleemsan/task-app:latest
+
             # Export kubeconfig for k3s
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
             # Navigate to the k8s folder and apply Kubernetes manifests
-            cd k8s
-            kubectl apply -f mysql-service.yaml
-            kubectl apply -f deployment.yaml
+            kubectl apply -f k8s

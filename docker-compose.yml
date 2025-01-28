@@ -1,13 +1,13 @@
+version: '3.8'
 services:
   app:
+    image: abdulhaleemsan/task-app:latest
     build:
       context: .
       dockerfile: dockerfile
     ports:
       - '3000:3000'
     environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
       - PORT=3000
       - NODE_ENV=development
     volumes:
@@ -37,7 +37,7 @@ services:
           'mysqladmin',
           'ping',
           '-h',
-          'mysql-db',  # Change from localhost to the service name
+          'localhost',
           '-u',
           'root',
           '-p$$MYSQL_ROOT_PASSWORD',
