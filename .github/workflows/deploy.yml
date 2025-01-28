@@ -33,12 +33,24 @@ jobs:
             echo "Waiting for MySQL..."
             sleep 2
           done
+          if [ $i -eq 30 ]; then
+            echo "MySQL did not start within the expected time."
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'yarn'
+
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            node-modules-${{ runner.os }}-
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -75,11 +87,14 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker Image
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/task
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           docker buildx build \
-          --build-arg DATABASE_URL="mysql://root:root@127.0.0.1:3306/task" \
-          --build-arg JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-          -t abdulhaleemsan/task-app:latest .
+            --build-arg DATABASE_URL="$DATABASE_URL" \
+            --build-arg JWT_SECRET="$JWT_SECRET" \
+            -t abdulhaleemsan/task-app:latest .
 
       - name: Push Docker Image
         run: docker push abdulhaleemsan/task-app:latest
@@ -89,7 +104,7 @@ jobs:
     needs: build-push
     steps:
       - name: SSH into EC2 and Deploy
-        uses: appleboy/ssh-action@v0.5.0
+        uses: appleboy/ssh-action@v0.4.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
