@@ -108,24 +108,34 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }} # Use key directly instead of key_path
+          key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           debug: true
           script: |
             set -e
             echo "Starting deployment..."
-
             cd /home/ec2-user/task || {
               echo "Directory not found, cloning repository..."
               git clone https://github.com/Abdulhaleem-6/task.git
               cd task
             }
 
+            echo "Checking k3s status..."
+            sudo systemctl status k3s || {
+              echo "K3s service is not running, attempting to restart..."
+              sudo systemctl restart k3s
+              sleep 10  # Give k3s time to start up
+            }
+
             echo "Setting up kubectl..."
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            sudo chmod 644 /etc/rancher/k3s/k3s.yaml  # Ensure readable permissions
+
+            echo "Waiting for API server to be ready..."
+            timeout 60 bash -c 'until kubectl get nodes; do sleep 2; done'
 
             echo "Applying Kubernetes manifests..."
-            kubectl apply -f k8s || {
+            kubectl apply -f k8s --validate=false || {
               echo "Failed to apply Kubernetes manifests"
               exit 1
             }
@@ -135,5 +145,4 @@ jobs:
               echo "Deployment failed"
               exit 1
             }
-
             echo "Deployment completed successfully"
