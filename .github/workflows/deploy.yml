@@ -103,50 +103,40 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-push
     steps:
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/private_key
-          chmod 600 ~/.ssh/private_key
-
       - name: SSH into EC2 and Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key_path: ~/.ssh/private_key
+          key: ${{ secrets.EC2_SSH_KEY }} # Use key directly instead of key_path
           port: 22
           debug: true
           script: |
             set -e
             echo "Starting deployment..."
 
-            # Navigate to project directory
             cd /home/ec2-user/task || {
               echo "Directory not found, cloning repository..."
               git clone https://github.com/Abdulhaleem-6/task.git
               cd task
             }
 
-            # Pull the latest Docker image
             echo "Pulling latest Docker image..."
             docker pull abdulhaleemsan/task-app:latest || {
               echo "Failed to pull Docker image"
               exit 1
             }
 
-            # Export kubeconfig for k3s
             echo "Setting up kubectl..."
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-            #Navigate to the k8s folder and apply Kubernetes manifests
             echo "Applying Kubernetes manifests..."
             kubectl apply -f k8s || {
               echo "Failed to apply Kubernetes manifests"
               exit 1
             }
 
-            # Verify deployment
+            echo "Verifying deployment..."
             kubectl rollout status deployment/task-app || {
               echo "Deployment failed"
               exit 1
