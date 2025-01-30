@@ -121,12 +121,6 @@ jobs:
               cd task
             }
 
-            echo "Pulling latest Docker image..."
-            docker pull abdulhaleemsan/task-app:latest || {
-              echo "Failed to pull Docker image"
-              exit 1
-            }
-
             echo "Setting up kubectl..."
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
